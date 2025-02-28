@@ -23,9 +23,10 @@ pub fn program_entry() -> i8 {
 }
 
 fn caller() -> Result<(), error::Error> {
+
     let (r1, w1) = ckb_std::syscalls::pipe()?;
     let (r2, w2) = ckb_std::syscalls::pipe()?;
-    let to_parent_fds: [u64; 2] = [r1, w2]; 
+    let to_parent_fds: [u64; 2] = [r1, w2];
     let to_child_fds: [u64; 3] = [r2, w1, 0]; // must ends with 0
 
     let mut pid: u64 = 0;
@@ -42,21 +43,22 @@ fn caller() -> Result<(), error::Error> {
         process_id: &mut pid as *mut u64,
         inherited_fds: to_child_fds.as_ptr(),
     };
-    ckb_std::syscalls::spawn(
+
+    let r = ckb_std::syscalls::spawn(
         0,
         ckb_std::ckb_constants::Source::CellDep,
-        place,
-        bounds,
+        0,
+        0,
         &mut spgs,
-    )?;
-
-    let mut buf = [0; 256];
-    let len = ckb_std::syscalls::read(to_parent_fds[0], &mut buf)?;
-    assert_eq!(len, 10);
-    buf[len] = 0;
-    assert_eq!(
-        CStr::from_bytes_until_nul(&buf).unwrap().to_str().unwrap(),
-        "helloworld"
     );
-    Ok(())
+
+    ckb_std::debug!("r is ok? {}", r.is_ok());
+
+    match r {
+        Ok(i) => {
+            ckb_std::debug!("i is ? {}", i);
+            return Ok(());
+        },
+        Err(e) => return Err(error::Error::from(e)),
+    }
 }

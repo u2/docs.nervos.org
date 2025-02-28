@@ -68,8 +68,12 @@ fn test_spawn() {
     let tx = context.complete_tx(tx);
 
     // run
-    let cycles = context
-        .verify_tx(&tx, 10_000_000)
-        .expect("pass verification");
-    println!("consume cycles: {}", cycles);
+    let err = context.verify_tx(&tx, 10_000_000).unwrap_err();
+    let error_string = err.to_string();
+    assert!(
+        error_string.contains(format!("error code {} ", 11).as_str()),
+        "error_string: {}, expected_error_code: {}",
+        error_string,
+        11
+    );
 }

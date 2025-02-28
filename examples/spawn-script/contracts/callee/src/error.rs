@@ -15,6 +15,7 @@ pub enum Error {
     MaxVmSpawned,
     MaxFdCreated,
     // Add customized errors here...
+    E,
 }
 
 impl From<SysError> for Error {
